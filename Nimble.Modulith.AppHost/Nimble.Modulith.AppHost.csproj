@@ -1,0 +1,17 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.3.4">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>62217578-fd02-4475-b7da-8c95968052a6</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nimble.Modulith.Web\Nimble.Modulith.Web.csproj" />
+    <ProjectReference Include="..\Nimble.Modulith.ServiceDefaults\Nimble.Modulith.ServiceDefaults.csproj" IsAspireProjectResource="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.SqlServer" />
+  </ItemGroup>
+
+</Project>
