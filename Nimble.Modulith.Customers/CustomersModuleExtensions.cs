@@ -1,0 +1,33 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Nimble.Modulith.Customers.Domain.Interfaces;
+using Nimble.Modulith.Customers.Infrastructure.Data;
+
+namespace Nimble.Modulith.Customers;
+
+public static class CustomersModuleExtensions
+{
+    public static IHostApplicationBuilder AddCustomersModuleServices(this IHostApplicationBuilder builder, ILogger logger)
+    {
+        builder.AddSqlServerDbContext<CustomersDbContext>("customersdb");
+
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+        builder.Services.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
+
+        logger.Information("{Module} module services registered", nameof(CustomersModuleExtensions).Replace("ModuleExtensions", ""));
+
+        return builder;
+    }
+
+    public static async Task<WebApplication> EnsureCustomersModuleDatabaseAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<CustomersDbContext>();
+        await context.Database.MigrateAsync();
+
+        return app;
+    }
+}

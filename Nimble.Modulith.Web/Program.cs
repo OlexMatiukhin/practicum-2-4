@@ -1,8 +1,11 @@
 using FastEndpoints;
-using Nimble.Modulith.Users;
-using Serilog;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
+using Mediator;
+using Nimble.Modulith.Customers;
+using Nimble.Modulith.Products;
+using Nimble.Modulith.Users;
+using Serilog;
 
 var logger = Log.Logger = new LoggerConfiguration()
   .Enrich.FromLogContext()
@@ -11,30 +14,50 @@ var logger = Log.Logger = new LoggerConfiguration()
 
 logger.Information("Starting web host");
 
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((_, config) => config.ReadFrom.Configuration(builder.Configuration));
 
 builder.AddServiceDefaults();
 
-// Add FastEndpoints with JWT Bearer Authentication and Authorization
+builder.Services.AddMediator(options =>
+{
+    options.ServiceLifetime = ServiceLifetime.Scoped;
+});
+
 builder.Services.AddFastEndpoints()
-    .AddAuthenticationJwtBearer(s =>
+  .AddAuthenticationJwtBearer(o => o.SigningKey = builder.Configuration["Auth:JwtSecret"]!)
+  .AddAuthorization();
+
+builder.Services.SwaggerDocument(o =>
+{
+    o.DocumentSettings = s =>
     {
-        s.SigningKey = builder.Configuration["Auth:JwtSecret"];
-    })
-    .AddAuthorization()
-    .SwaggerDocument();
+        s.Title = "Nimble Modulith API";
+        s.Version = "v1";
+    };
+});
+
 builder.AddUsersModuleServices(logger);
+builder.AddProductsModuleServices(logger);
+builder.AddCustomersModuleServices(logger);
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+app.UseDefaultExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseFastEndpoints()
-    .UseSwaggerGen();
+app.UseFastEndpoints();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwaggerGen();
+}
+
+app.MapDefaultEndpoints();
+
 await app.EnsureUsersModuleDatabaseAsync();
+await app.EnsureProductsModuleDatabaseAsync();
+await app.EnsureCustomersModuleDatabaseAsync();
 
 app.Run();
