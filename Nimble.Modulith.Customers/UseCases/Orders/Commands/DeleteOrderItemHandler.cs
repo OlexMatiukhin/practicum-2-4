@@ -24,7 +24,15 @@ public class DeleteOrderItemHandler(IRepository<Order> repository)
             return Result<OrderDto>.NotFound("Order item not found");
         }
 
-        order.RemoveItem(item);
+        try
+        {
+            order.RemoveItem(item);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result<OrderDto>.Error(ex.Message);
+        }
+
         order.UpdatedAt = DateTime.UtcNow;
 
         await repository.UpdateAsync(order, ct);

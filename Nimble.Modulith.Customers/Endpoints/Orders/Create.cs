@@ -1,15 +1,16 @@
 using FastEndpoints;
 using Mediator;
+using Nimble.Modulith.Customers.Infrastructure;
+using Nimble.Modulith.Customers.UseCases.Customers.Queries;
 using Nimble.Modulith.Customers.UseCases.Orders.Commands;
 
 namespace Nimble.Modulith.Customers.Endpoints.Orders;
 
-public class Create(IMediator mediator) : Endpoint<CreateOrderRequest, OrderResponse>
+public class Create(IMediator mediator, ICustomerAuthorizationService authService) : Endpoint<CreateOrderRequest, OrderResponse>
 {
     public override void Configure()
     {
         Post("/orders");
-        AllowAnonymous();
         Summary(s =>
         {
             s.Summary = "Create a new order";
@@ -20,14 +21,35 @@ public class Create(IMediator mediator) : Endpoint<CreateOrderRequest, OrderResp
 
     public override async Task HandleAsync(CreateOrderRequest req, CancellationToken ct)
     {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var customerQuery = new GetCustomerByIdQuery(req.CustomerId);
+        var customerResult = await mediator.Send(customerQuery, ct);
+
+        if (!customerResult.IsSuccess)
+        {
+            AddError($"Customer with ID {req.CustomerId} not found");
+            await Send.ErrorsAsync(statusCode: 404, cancellation: ct);
+            return;
+        }
+
+        if (!authService.IsAdminOrOwner(User, customerResult.Value.Email))
+        {
+            AddError("You can only create orders for your own customer record");
+            await Send.ErrorsAsync(statusCode: 403, cancellation: ct);
+            return;
+        }
+
         var command = new CreateOrderCommand(
             req.CustomerId,
             req.OrderDate,
             req.Items.Select(i => new CreateOrderItemDto(
                 i.ProductId,
-                i.ProductName,
-                i.Quantity,
-                i.UnitPrice
+                i.Quantity
             )).ToList()
         );
 
@@ -35,7 +57,8 @@ public class Create(IMediator mediator) : Endpoint<CreateOrderRequest, OrderResp
 
         if (!result.IsSuccess)
         {
-            await Send.NotFoundAsync(ct);
+            AddError("Failed to create order");
+            await Send.ErrorsAsync(cancellation: ct);
             return;
         }
 

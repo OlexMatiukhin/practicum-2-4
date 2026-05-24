@@ -1,0 +1,27 @@
+{
+  "message": "User created successfully",
+  "success": true,
+  "userId": "d1d47ad7-7f43-4295-a846-42a0e67c4711",
+  "errors": null
+   "email": "user@gmail.com",
+  "password": "user123"
+  "Role" : user
+}
+
+{
+    "email": "testuser@example.com",
+    "password": "Test123!"
+}
+   ```
+**Add the user to the Admin role** via POST to `/users/{userId}/roles`:
+{
+     "roleName": "admin"
+}
+
+
+/// User without role
+{
+"userId": "b92776c7-5a73-49af-a086-c1622d7233e1",
+  "email": "anton@gmail.com",
+  "password": "anton123"
+}

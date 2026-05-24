@@ -1,0 +1,35 @@
+using Ardalis.Result;
+using Mediator;
+using Microsoft.AspNetCore.Identity;
+
+namespace Nimble.Modulith.Users.UseCases.Commands;
+
+public class CreateUserInternalCommandHandler(UserManager<IdentityUser> userManager)
+    : ICommandHandler<CreateUserInternalCommand, Result<string>>
+{
+    public async ValueTask<Result<string>> Handle(CreateUserInternalCommand command, CancellationToken cancellationToken)
+    {
+        var existingUser = await userManager.FindByEmailAsync(command.Email);
+        if (existingUser is not null)
+        {
+            return Result<string>.Success(existingUser.Id);
+        }
+
+        var user = new IdentityUser
+        {
+            UserName = command.Email,
+            Email = command.Email,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, command.Password);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+            return Result<string>.Error($"Failed to create user: {errors}");
+        }
+
+        return Result<string>.Success(user.Id);
+    }
+}

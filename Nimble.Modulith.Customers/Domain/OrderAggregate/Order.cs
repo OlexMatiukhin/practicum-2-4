@@ -15,11 +15,21 @@ public class Order : EntityBase
 
     public void AddItem(OrderItem item)
     {
+        if (Status != OrderStatus.Pending)
+        {
+            throw new InvalidOperationException("Only pending orders can be modified");
+        }
+
         _items.Add(item);
     }
 
     public void RemoveItem(OrderItem item)
     {
+        if (Status != OrderStatus.Pending)
+        {
+            throw new InvalidOperationException("Only pending orders can be modified");
+        }
+
         _items.Remove(item);
     }
 }

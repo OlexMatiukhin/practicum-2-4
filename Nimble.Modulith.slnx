@@ -11,7 +11,11 @@
     <Project Path="Nimble.Modulith.Products.Contracts/Nimble.Modulith.Products.Contracts.csproj" />
     <Project Path="Nimble.Modulith.Products/Nimble.Modulith.Products.csproj" />
   </Folder>
+  <Folder Name="/Reporting Module/">
+    <Project Path="Nimble.Modulith.Reporting/Nimble.Modulith.Reporting.csproj" />
+  </Folder>
   <Folder Name="/Users Module/">
+    <File Path="test_info.txt" />
     <Project Path="Nimble.Modulith.Users.Contracts/Nimble.Modulith.Users.Contracts.csproj" />
     <Project Path="Nimble.Modulith.Users/Nimble.Modulith.Users.csproj" />
   </Folder>
@@ -20,4 +24,6 @@
     <Project Path="Nimble.Modulith.ServiceDefaults/Nimble.Modulith.ServiceDefaults.csproj" />
     <Project Path="Nimble.Modulith.Web/Nimble.Modulith.Web.csproj" />
   </Folder>
+  <Project Path="Nimble.Modulith.Email.Contracts/Nimble.Modulith.Email.Contracts.csproj" />
+  <Project Path="Nimble.Modulith.Email/Nimble.Modulith.Email.csproj" />
 </Solution>
