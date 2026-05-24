@@ -1,0 +1,39 @@
+@startuml C4_Level_2_Container
+!include <C4/C4_Container>
+
+LAYOUT_WITH_LEGEND()
+
+title C4 Level 2 - Container - Nimble Modulith
+
+Person(customer, "Customer", "Користувач системи.")
+Person(admin, "Admin", "Адміністратор системи.")
+
+System_Ext(smtp, "SMTP / Papercut", "Email capture/sending service.")
+
+System_Boundary(nimbleBoundary, "Nimble Modulith") {
+    Container(apphost, "Aspire AppHost", ".NET Aspire", "Оркеструє Web API, SQL Server та Papercut у development-середовищі.")
+    Container(web, "Web Host", "ASP.NET Core, FastEndpoints, Mediator", "Єдиний API-процес модульного моноліту. Містить Users, Products, Customers, Email та Reporting modules.")
+
+    ContainerDb(usersDb, "usersdb", "SQL Server", "Identity users, roles та authentication data.")
+    ContainerDb(productsDb, "productsdb", "SQL Server", "Product catalog та ціни.")
+    ContainerDb(customersDb, "customersdb", "SQL Server", "Customers, orders та order items.")
+    ContainerDb(reportingDb, "reportingdb", "SQL Server", "Star schema для аналітичної звітності.")
+}
+
+Rel(customer, web, "Викликає API", "HTTPS/HTTP JSON")
+Rel(admin, web, "Керує системою та переглядає звіти", "HTTPS/HTTP JSON")
+
+Rel(apphost, web, "Запускає та передає connection strings", "Aspire orchestration")
+Rel(apphost, usersDb, "Створює/підключає", "Aspire")
+Rel(apphost, productsDb, "Створює/підключає", "Aspire")
+Rel(apphost, customersDb, "Створює/підключає", "Aspire")
+Rel(apphost, reportingDb, "Створює/підключає", "Aspire")
+Rel(apphost, smtp, "Запускає локальний контейнер Papercut", "Docker")
+
+Rel(web, usersDb, "Reads/Writes", "EF Core")
+Rel(web, productsDb, "Reads/Writes", "EF Core")
+Rel(web, customersDb, "Reads/Writes", "EF Core")
+Rel(web, reportingDb, "Writes facts/dimensions, reads reports", "EF Core / Dapper")
+Rel(web, smtp, "Sends email", "SMTP")
+
+@enduml

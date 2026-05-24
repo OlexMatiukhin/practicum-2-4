@@ -3,6 +3,12 @@
   <File Path="Directory.Build.props" />
   <File Path="Directory.Packages.props" />
 </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/README.md" />
+    <File Path="docs/c4-level-1-system-context.puml" />
+    <File Path="docs/c4-level-2-container.puml" />
+    <File Path="docs/c4-level-3-components.puml" />
+  </Folder>
   <Folder Name="/Customers Module/">
     <Project Path="Nimble.Modulith.Customers.Contracts/Nimble.Modulith.Customers.Contracts.csproj" />
     <Project Path="Nimble.Modulith.Customers/Nimble.Modulith.Customers.csproj" />

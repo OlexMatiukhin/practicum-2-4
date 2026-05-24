@@ -1,0 +1,47 @@
+@startuml C4_Level_3_Component_Web_Host
+!include <C4/C4_Component>
+
+LAYOUT_WITH_LEGEND()
+
+title C4 Level 3 - Component - Web Host Modular Monolith
+
+Container_Boundary(web, "Web Host - ASP.NET Core Modular Monolith") {
+    Component(api, "FastEndpoints API Layer", "FastEndpoints", "HTTP endpoints, Swagger/OpenAPI, authentication and authorization pipeline.")
+    Component(mediator, "Mediator", "Mediator.SourceGenerator", "In-process commands, queries, notifications and pipeline behaviors.")
+
+    Component(users, "Users Module", "ASP.NET Core Identity, EF Core", "Registration, login, roles, password reset and user account creation.")
+    Component(products, "Products Module", "EF Core", "Product catalog, product management and product detail/price queries.")
+    Component(customers, "Customers Module", "EF Core, Ardalis Specification", "Customer profiles, orders, order confirmation and order domain events.")
+    Component(email, "Email Module", "MailKit, BackgroundService, Channel<T>", "Queues and sends transactional emails asynchronously.")
+    Component(reporting, "Reporting Module", "EF Core, Dapper", "Ingests confirmed orders into star schema and exposes analytical reports.")
+}
+
+ContainerDb(usersDb, "usersdb", "SQL Server", "Identity data.")
+ContainerDb(productsDb, "productsdb", "SQL Server", "Products and prices.")
+ContainerDb(customersDb, "customersdb", "SQL Server", "Customers and orders.")
+ContainerDb(reportingDb, "reportingdb", "SQL Server", "DimDate, DimCustomer, DimProduct, FactOrders.")
+System_Ext(smtp, "SMTP / Papercut", "Email delivery/capture.")
+
+Rel(api, users, "Routes user endpoints to")
+Rel(api, products, "Routes product endpoints to")
+Rel(api, customers, "Routes customer/order endpoints to")
+Rel(api, reporting, "Routes report endpoints to")
+
+Rel(users, mediator, "Handles commands/events through")
+Rel(products, mediator, "Provides product details queries through")
+Rel(customers, mediator, "Sends product queries and publishes OrderCreatedEvent through")
+Rel(reporting, mediator, "Handles OrderCreatedEvent from")
+Rel(email, mediator, "Handles SendEmailCommand from")
+
+Rel(users, usersDb, "Reads/Writes", "EF Core")
+Rel(products, productsDb, "Reads/Writes", "EF Core")
+Rel(customers, customersDb, "Reads/Writes", "EF Core")
+Rel(reporting, reportingDb, "Writes ingestion data and reads reports", "EF Core / Dapper")
+Rel(email, smtp, "Sends email", "SMTP")
+
+Rel(customers, products, "Queries product name and price", "Mediator query")
+Rel(customers, email, "Sends order confirmation emails", "Mediator command")
+Rel(users, email, "Sends password/reset/role emails", "Mediator command")
+Rel(customers, reporting, "Publishes confirmed order event", "Mediator notification")
+
+@enduml

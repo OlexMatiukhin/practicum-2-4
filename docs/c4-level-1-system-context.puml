@@ -1,0 +1,23 @@
+@startuml C4_Level_1_System_Context
+!include <C4/C4_Context>
+
+LAYOUT_WITH_LEGEND()
+
+title C4 Level 1 - System Context - Nimble Modulith
+
+Person(customer, "Customer", "Користувач, який реєструється, створює профіль клієнта та оформлює замовлення.")
+Person(admin, "Admin", "Адміністратор, який керує продуктами, користувачами, ролями та переглядає звіти.")
+
+System_Boundary(nimbleBoundary, "Nimble Modulith") {
+    System(nimble, "Nimble Modulith API", "Модульний моноліт для користувачів, продуктів, клієнтів, замовлень, email та звітності.")
+}
+
+System_Ext(smtp, "SMTP / Papercut", "Зовнішній SMTP-сервер або локальний Papercut для email-повідомлень.")
+System_Ext(client, "HTTP Client / Swagger UI", "Браузер, Swagger або .http файл для виклику API.")
+
+Rel(customer, client, "Використовує", "HTTPS/HTTP")
+Rel(admin, client, "Використовує", "HTTPS/HTTP")
+Rel(client, nimble, "Надсилає API-запити", "JSON/HTTP")
+Rel(nimble, smtp, "Надсилає transactional emails", "SMTP")
+
+@enduml
